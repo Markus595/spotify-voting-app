@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <script>
+        function confirmAction(url, message) {
+            if (confirm(message)) {
+                window.location.href = url;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>🛠 Admin Panel</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul style="color: green;">
+          {% for msg in messages %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <button onclick="confirmAction('/admin-reset-all', '❗️Wirklich ALLE Votes + User-Votes löschen?')">
+        Alle Votes + User-Votes löschen
+    </button>
+
+    <br><br>
+
+    <button onclick="confirmAction('/admin-reset-user-votes', 'Nur User-Votes zurücksetzen? (Stimmen bleiben erhalten)')">
+        Nur User-Votes zurücksetzen
+    </button>
+</body>
+</html>
