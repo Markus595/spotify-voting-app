@@ -136,9 +136,12 @@ def admin_panel():
 def reset_all():
     if not session.get("is_admin"):
         return redirect("/admin")
+
+    session.clear()  # ✅ Setzt die Sitzung des Admins zurück
     save_data({"votes": {}, "user_votes": {}})
     flash("✅ Alle Votes + User-Votes wurden zurückgesetzt.")
     return redirect("/admin-panel")
+
 
 @app.route("/admin-reset-user-votes")
 def reset_user_votes():
