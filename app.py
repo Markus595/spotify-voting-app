@@ -90,7 +90,8 @@ def vote_page():
     # Sortieren nach Votes
     tracks.sort(key=lambda s: s["votes"], reverse=True)
 
-    return render_template("voting.html", songs=tracks)
+    return render_template("voting.html", songs=tracks, playlist_cover_url="/static/Club_40.jpeg")
+
 
 @app.route("/vote", methods=["POST"])
 def vote():
