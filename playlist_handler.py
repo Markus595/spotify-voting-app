@@ -29,15 +29,17 @@ class SpotifyPlaylistManager:
 
         items = data["items"]
 
-        return [
+               return [
             {
                 "id": item["track"]["id"],
                 "name": item["track"]["name"],
-                "artist": item["track"]["artists"][0]["name"]
+                "artist": item["track"]["artists"][0]["name"],
+                "image": item["track"]["album"]["images"][0]["url"]
             }
             for item in items
             if item.get("track") and item["track"].get("id")
         ]
+
 
     except Exception as e:
         print("❌ Ausnahme:", str(e))
