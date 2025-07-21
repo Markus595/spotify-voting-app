@@ -97,6 +97,16 @@ def vote_page():
 @app.route("/vote", methods=["POST"])
 def vote():
     song_id = request.json.get("song_id")
+
+    # Stelle sicher, dass session läuft
+    if "voted_songs" not in session:
+        session["voted_songs"] = []
+
+    # Prüfe, ob schon gevotet wurde
+    if song_id in session["voted_songs"]:
+        return jsonify(success=False, message="WIE OFT DENN NOCH?!")
+
+    # Stimme speichern
     data = load_data()
     votes = data["votes"]
     if song_id in votes:
@@ -104,4 +114,9 @@ def vote():
     else:
         votes[song_id] = 1
     save_data(data)
+
+    # Song-ID in Session eintragen
+    session["voted_songs"].append(song_id)
+    session.modified = True
+
     return jsonify(success=True)
