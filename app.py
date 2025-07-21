@@ -80,12 +80,10 @@ def vote_page():
     user_id = request.remote_addr
 
     current = spotify.get_currently_playing()
-      if current and current in votes:
+    if current and current in votes:
         votes[current] = 0
         data["votes"] = votes
         save_data(data)
-
-
 
     for song in tracks:
         song["votes"] = votes.get(song["id"], 0)
