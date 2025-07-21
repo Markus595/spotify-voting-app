@@ -11,7 +11,7 @@ app = Flask(__name__)
 CLIENT_ID = "365e83ace9494e878923a23b42305129"
 CLIENT_SECRET = "262d86ab75174a609be1b27180faded3"
 REDIRECT_URI = "https://spotify-voting-app.onrender.com/callback"
-PLAYLIST_ID = "1FRH27WUto6I32gBRJNVYp?si=v2h9WHgiStq8mAIqWAZGfg&pi=vioBLf3_TrSZ5"  # <== ERSETZEN!
+PLAYLIST_ID = "1FRH27WUto6I32gBRJNVYp"  # <== ERSETZEN!
 
 # 📦 Lokale Datei zum Speichern der Votes
 DATA_FILE = "data.json"
