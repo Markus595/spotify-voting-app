@@ -1,4 +1,5 @@
 import requests
+import json
 
 class SpotifyPlaylistManager:
     def __init__(self, access_token, playlist_id):
@@ -12,22 +13,30 @@ class SpotifyPlaylistManager:
     def get_playlist_tracks(self):
         url = f"{self.api_url}/playlists/{self.playlist_id}/tracks"
         res = requests.get(url, headers=self.get_headers())
-        res.raise_for_status()
-        items = res.json()["items"]
-        return [
-            {
-                "id": item["track"]["id"],
-                "name": item["track"]["name"],
-                "artist": item["track"]["artists"][0]["name"]
-            }
-            for item in items
-        ]
 
-    def get_currently_playing(self):
-        url = f"{self.api_url}/me/player/currently-playing"
-        res = requests.get(url, headers=self.get_headers())
-        if res.status_code == 204:
-            return None
-        res.raise_for_status()
-        data = res.json()
-        return data["item"]["id"]
+        try:
+            res.raise_for_status()
+            data = res.json()
+
+            if "items" not in data:
+                print("❌ Fehler: 'items' nicht in Antwort von Spotify.")
+                print(json.dumps(data, indent=2))
+                return []
+
+            items = data["items"]
+
+            # Songs extrahieren
+            return [
+                {
+                    "id": item["track"]["id"],
+                    "name": item["track"]["name"],
+                    "artist": item["track"]["artists"][0]["name"]
+                }
+                for item in items
+                if item.get("track") and item["track"].get("id")
+            ]
+
+        except Exception as e:
+            print("❌ Ausnahme beim Abrufen der Playlist:", str(e))
+            return []
+
