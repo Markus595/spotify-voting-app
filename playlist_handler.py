@@ -39,22 +39,20 @@ class SpotifyPlaylistManager:
                 for item in items
                 if item.get("track") and item["track"].get("id")
             ]
-def get_currently_playing(self):
-    url = f"{self.api_url}/me/player/currently-playing"
-    headers = self.get_headers()
-    res = requests.get(url, headers=headers)
-    
-    if res.status_code == 204:
-        return None  # Nothing is playing
-
-    try:
-        res.raise_for_status()
-        data = res.json()
-        return data["item"]["id"]
-    except Exception as e:
-        print("❌ Fehler beim Abrufen des aktuellen Songs:", str(e))
-        return None
 
         except Exception as e:
             print("❌ Ausnahme beim Abrufen der Playlist:", str(e))
             return []
+
+    def get_currently_playing(self):
+        url = f"{self.api_url}/me/player/currently-playing"
+        headers = self.get_headers()
+        try:
+            res = requests.get(url, headers=headers)
+            if res.status_code == 204:
+                return None
+            data = res.json()
+            return data["item"]["id"] if data.get("item") else None
+        except Exception as e:
+            print("❌ Fehler bei get_currently_playing:", str(e))
+            return None
