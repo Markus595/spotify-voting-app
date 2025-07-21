@@ -31,6 +31,30 @@ def load_data():
 # 💾 Access Token speichern (einfach für Demo-Zwecke)
 ACCESS_TOKEN = ""
 
+import time
+
+def reset_all_votes():
+    data = {"votes": {}, "user_votes": {}}
+    save_data(data)
+
+def reset_user_votes():
+    data = load_data()
+    data["user_votes"] = {}
+    save_data(data)
+
+def auto_reset_user_votes():
+    data = load_data()
+    now = time.time()
+    last_reset = data.get("last_reset", 0)
+
+    # Alle 600 Sekunden (10 Minuten)
+    if now - last_reset > 600:
+        print("🔁 Automatischer Reset der User-Votes")
+        data["user_votes"] = {}
+        data["last_reset"] = now
+        save_data(data)
+
+
 @app.route("/")
 def index():
     query = urlencode({
@@ -69,6 +93,8 @@ def callback():
 
 @app.route("/vote")
 def vote_page():
+    auto_reset_user_votes()
+
     if not ACCESS_TOKEN:
         return redirect("/")
     spotify = SpotifyPlaylistManager(ACCESS_TOKEN, PLAYLIST_ID)
@@ -97,26 +123,39 @@ def vote_page():
 @app.route("/vote", methods=["POST"])
 def vote():
     song_id = request.json.get("song_id")
+    ip = request.remote_addr
 
-    # Stelle sicher, dass session läuft
-    if "voted_songs" not in session:
-        session["voted_songs"] = []
-
-    # Prüfe, ob schon gevotet wurde
-    if song_id in session["voted_songs"]:
-        return jsonify(success=False, message="WIE OFT DENN NOCH?!")
-
-    # Stimme speichern
     data = load_data()
-    votes = data["votes"]
-    if song_id in votes:
-        votes[song_id] += 1
-    else:
-        votes[song_id] = 1
+    votes = data.get("votes", {})
+    user_votes = data.get("user_votes", {})
+
+    # Wenn IP schon für diesen Song gevotet hat → kein weiteres Voting
+    if ip in user_votes and song_id in user_votes[ip]:
+        return jsonify(success=False, message="WIE OFT DEN NOCH?")
+
+    # Vote zählen
+    votes[song_id] = votes.get(song_id, 0) + 1
+
+    # IP merken
+    if ip not in user_votes:
+        user_votes[ip] = []
+    user_votes[ip].append(song_id)
+
+    # Speichern
+    data["votes"] = votes
+    data["user_votes"] = user_votes
     save_data(data)
 
-    # Song-ID in Session eintragen
-    session["voted_songs"].append(song_id)
-    session.modified = True
+    return jsonify(success=True, message="Gute Wahl!")
 
-    return jsonify(success=True)
+
+
+@app.route("/admin-reset-all")
+def admin_reset_all():
+    reset_all_votes()
+    return "✅ Alle Votes & User-Daten wurden zurückgesetzt."
+
+@app.route("/admin-reset-user-votes")
+def admin_reset_users():
+    reset_user_votes()
+    return "✅ Nur User-Votes wurden zurückgesetzt. Stimmen bleiben erhalten."
