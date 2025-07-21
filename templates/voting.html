@@ -69,46 +69,38 @@
         <img src="{{ playlist_cover_url }}" alt="Playlist Cover">
     </div>
 
-    <div class="song-list">
-        {% for song in songs %}
-        <div class="song">
-            <img src="{{ song.image }}" alt="Cover">
-            <div class="song-info">
-                <strong>{{ song.name }}</strong><br>
-                <small>{{ song.artist }}</small>
-            </div>
-            <button class="vote-btn" onclick="vote('{{ song.id }}')">👍 {{ song.votes }}</button>
+  <div class="song-list">
+    {% for song in songs %}
+    <div class="song">
+        <img src="{{ song.image }}" alt="Cover">
+        <div class="song-info">
+            <strong>{{ song.name }}</strong><br>
+            <small>{{ song.artist }}</small>
         </div>
-        {% endfor %}
+        <div style="text-align:center;">
+            <button class="vote-btn" onclick="vote('{{ song.id }}', this)">👍 {{ song.votes }}</button>
+            <div class="vote-feedback" style="color: #1DB954; font-size: 1em; font-weight: bold; margin-top: 5px;"></div>
+        </div>
     </div>
+    {% endfor %}
+</div>
 
-    <script>
-        function vote(song_id) {
-            fetch("/vote", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ song_id: song_id })
-            }).then(() => window.location.reload());
-        }
-    </script>
-<div id="feedback" style="text-align:center; margin-top:20px; color: #1DB954;"></div>
 
-<script>
-    function vote(song_id) {
+   <script>
+    function vote(song_id, buttonElement) {
+        const feedbackDiv = buttonElement.nextElementSibling;
+
+        // Wenn schon gevotet
         if (localStorage.getItem("voted_" + song_id)) {
-            const feedback = document.getElementById("feedback");
-            feedback.textContent = "❗ WIE OFT DENN NOCH???";
-            
-            // Nach 3 Sekunden wieder ausblenden
+            feedbackDiv.textContent = "WIE OFT DEN NOCH?";
+            feedbackDiv.style.color = "#ff5252";  // Rot für Warnung
             setTimeout(() => {
-                feedback.textContent = "";
-            }, 3000);
-
+                feedbackDiv.textContent = "";
+            }, 2000);
             return;
         }
 
+        // Noch nicht gevotet: senden + speichern
         fetch("/vote", {
             method: "POST",
             headers: {
@@ -117,7 +109,12 @@
             body: JSON.stringify({ song_id: song_id })
         }).then(() => {
             localStorage.setItem("voted_" + song_id, "true");
-            window.location.reload();
+            feedbackDiv.textContent = "Gute Wahl!";
+            feedbackDiv.style.color = "#1DB954";  // Grün für Erfolg
+
+            setTimeout(() => {
+                location.reload();  // Seite neu laden nach 2 Sek.
+            }, 2000);
         });
     }
 </script>
