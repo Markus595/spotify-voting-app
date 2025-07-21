@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Party Playlist Voting</title>
+</head>
+<body>
+    <h1>Vote for the next song!</h1>
+    <div id="song-list">
+        {% for song_id, votes in songs.items() %}
+            <div>
+                <span>{{ song_id }} - Votes: {{ votes }}</span>
+                <button onclick="vote('{{ song_id }}')">Vote</button>
+            </div>
+        {% endfor %}
+    </div>
+    <script>
+        function vote(songId) {
+            fetch("/vote", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({song_id: songId})
+            }).then(response => location.reload());
+        }
+    </script>
+</body>
+</html>
