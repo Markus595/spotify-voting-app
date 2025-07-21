@@ -12,20 +12,22 @@ class SpotifyPlaylistManager:
 
     def get_playlist_tracks(self):
         url = f"{self.api_url}/playlists/{self.playlist_id}/tracks"
-        res = requests.get(url, headers=self.get_headers())
+        headers = self.get_headers()
+        print("🔍 Anfrage an:", url)
+        print("📡 Header:", headers)
 
         try:
+            res = requests.get(url, headers=headers)
             res.raise_for_status()
             data = res.json()
 
             if "items" not in data:
-                print("❌ Fehler: 'items' nicht in Antwort von Spotify.")
+                print("❌ Fehler: 'items' nicht in Antwort:")
                 print(json.dumps(data, indent=2))
                 return []
 
             items = data["items"]
 
-            # Songs extrahieren
             return [
                 {
                     "id": item["track"]["id"],
@@ -35,8 +37,20 @@ class SpotifyPlaylistManager:
                 for item in items
                 if item.get("track") and item["track"].get("id")
             ]
-
         except Exception as e:
             print("❌ Ausnahme beim Abrufen der Playlist:", str(e))
             return []
 
+    def get_currently_playing(self):
+        url = f"{self.api_url}/me/player/currently-playing"
+        headers = self.get_headers()
+        try:
+            res = requests.get(url, headers=headers)
+            if res.status_code == 204:
+                return None
+            res.raise_for_status()
+            data = res.json()
+            return data["item"]["id"]
+        except Exception as e:
+            print("❌ Fehler bei currently-playing:", str(e))
+            return None
