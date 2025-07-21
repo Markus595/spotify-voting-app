@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, render_template, jsonify
+from flask import Flask, redirect, request, render_template, jsonify, session
 import requests
 import base64
 import json
@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 from playlist_handler import SpotifyPlaylistManager
 
 app = Flask(__name__)
+app.secret_key = "markus"  # 🔐 notwendig für session (z. B. um Votes pro User zu speichern)
 
 # 🔐 Spotify API-Zugang
 CLIENT_ID = "365e83ace9494e878923a23b42305129"
