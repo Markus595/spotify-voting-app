@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 # Diese Werte bekommst du aus dem Spotify Developer Dashboard
 CLIENT_ID = "365e83ace9494e878923a23b42305129"
 CLIENT_SECRET = "262d86ab75174a609be1b27180faded3"
-REDIRECT_URI = "https://spotify-voting-app.onrender.com"
+REDIRECT_URI = "REDIRECT_URI = "https://spotify-voting-app.onrender.com/callback"
 
 # Scopes, die du brauchst
 SCOPES = "playlist-modify-public playlist-read-private user-read-currently-playing"
