@@ -93,5 +93,36 @@
             }).then(() => window.location.reload());
         }
     </script>
+<div id="feedback" style="text-align:center; margin-top:20px; color: #1DB954;"></div>
+
+<script>
+    function vote(song_id) {
+        if (localStorage.getItem("voted_" + song_id)) {
+            const feedback = document.getElementById("feedback");
+            feedback.textContent = "❗ WIE OFT DENN NOCH???";
+            
+            // Nach 3 Sekunden wieder ausblenden
+            setTimeout(() => {
+                feedback.textContent = "";
+            }, 3000);
+
+            return;
+        }
+
+        fetch("/vote", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ song_id: song_id })
+        }).then(() => {
+            localStorage.setItem("voted_" + song_id, "true");
+            window.location.reload();
+        });
+    }
+</script>
+
+
+    
 </body>
 </html>
