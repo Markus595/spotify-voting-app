@@ -72,7 +72,7 @@
   <div class="song-list">
     {% for song in songs %}
     <div class="song">
-        <img src="{{ song.image }}" alt="Cover">
+        <img src="{{ url_for('static', filename='Club_40.jpeg') }}" alt="Club 40">
         <div class="song-info">
             <strong>{{ song.name }}</strong><br>
             <small>{{ song.artist }}</small>
