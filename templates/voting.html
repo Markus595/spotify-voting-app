@@ -70,19 +70,19 @@
     </div>
 
   <div class="song-list">
-    {% for song in songs %}
-    <div class="song">
-        <img src="{{ url_for('static', filename='Club_40.jpeg') }}" alt="Club 40">
-        <div class="song-info">
-            <strong>{{ song.name }}</strong><br>
-            <small>{{ song.artist }}</small>
-        </div>
-        <div style="text-align:center;">
-            <button class="vote-btn" onclick="vote('{{ song.id }}', this)">👍 {{ song.votes }}</button>
-            <div class="vote-feedback" style="color: #1DB954; font-size: 1em; font-weight: bold; margin-top: 5px;"></div>
-        </div>
-    </div>
-    {% endfor %}
+  {% for song in songs %}
+  <div class="song">
+      <img src="{{ song.image }}" alt="Cover">
+      <div class="song-info">
+          <strong>{{ song.name }}</strong><br>
+          <small>{{ song.artist }}</small>
+      </div>
+      <div style="text-align:center;">
+          <button class="vote-btn" onclick="vote('{{ song.id }}', this)">👍 {{ song.votes }}</button>
+          <div class="vote-feedback" style="color: #1DB954; font-size: 1em; font-weight: bold; margin-top: 5px;"></div>
+      </div>
+  </div>
+  {% endfor %}
 </div>
 
 
