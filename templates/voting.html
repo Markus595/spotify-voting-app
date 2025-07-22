@@ -87,37 +87,47 @@
 
 
    <script>
-    function vote(song_id, buttonElement) {
-        const feedbackDiv = buttonElement.nextElementSibling;
+function vote(song_id, buttonElement) {
+    const feedbackDiv = buttonElement.nextElementSibling;
 
-        // Wenn schon gevotet
-        if (localStorage.getItem("voted_" + song_id)) {
-            feedbackDiv.textContent = "WIE OFT DEN NOCH?";
-            feedbackDiv.style.color = "#ff5252";  // Rot für Warnung
+    const lastVote = localStorage.getItem("voted_" + song_id);
+    const now = Date.now();
+
+    if (lastVote && now - parseInt(lastVote) < 10 * 60 * 1000) {
+        feedbackDiv.textContent = "WIE OFT DEN NOCH?";
+        feedbackDiv.style.color = "#ff5252";
+        setTimeout(() => {
+            feedbackDiv.textContent = "";
+        }, 2000);
+        return;
+    }
+
+    // Vote senden
+    fetch("/vote", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ song_id: song_id })
+    }).then(res => res.json()).then(response => {
+        if (response.success) {
+            localStorage.setItem("voted_" + song_id, now.toString());
+            feedbackDiv.textContent = "Gute Wahl!";
+            feedbackDiv.style.color = "#1DB954";
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            feedbackDiv.textContent = response.message || "Fehler";
+            feedbackDiv.style.color = "#ff5252";
             setTimeout(() => {
                 feedbackDiv.textContent = "";
             }, 2000);
-            return;
         }
-
-        // Noch nicht gevotet: senden + speichern
-        fetch("/vote", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ song_id: song_id })
-        }).then(() => {
-            localStorage.setItem("voted_" + song_id, "true");
-            feedbackDiv.textContent = "Gute Wahl!";
-            feedbackDiv.style.color = "#1DB954";  // Grün für Erfolg
-
-            setTimeout(() => {
-                location.reload();  // Seite neu laden nach 2 Sek.
-            }, 2000);
-        });
-    }
+    });
+}
 </script>
+
 
 
     
