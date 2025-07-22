@@ -5,17 +5,18 @@ import json
 from urllib.parse import urlencode
 from playlist_handler import SpotifyPlaylistManager
 import os
+import time
 
 app = Flask(__name__)
-app.secret_key = "markus"  # Admin-Zugang absichern
+app.secret_key = "markus"
 
-# 🔐 Spotify API-Zugang
+# Spotify API-Zugang
 CLIENT_ID = "365e83ace9494e878923a23b42305129"
 CLIENT_SECRET = "262d86ab75174a609be1b27180faded3"
 REDIRECT_URI = "https://spotify-voting-app.onrender.com/callback"
 PLAYLIST_ID = "1FRH27WUto6I32gBRJNVYp"
 
-# 📁 Daten-Datei
+# Daten-Datei
 DATA_FILE = "data.json"
 
 def save_data(data):
@@ -28,7 +29,6 @@ def load_data():
     with open(DATA_FILE, "r") as f:
         return json.load(f)
 
-# 💾 Access Token
 ACCESS_TOKEN = ""
 
 @app.route("/")
@@ -42,7 +42,7 @@ def index():
     auth_url = f"https://accounts.spotify.com/authorize?{query}"
     return f"""
         <h2>Vote for the next song!</h2>
-        <a href="{auth_url}">
+        <a href=\"{auth_url}\">
             <button style='font-size:20px;padding:10px 20px;'>Login with Spotify</button>
         </a>
     """
@@ -87,34 +87,36 @@ def vote_page():
 
     for song in tracks:
         song["votes"] = votes.get(song["id"], 0)
-        song["already_voted"] = song["id"] in user_votes.get(user_id, [])
+        last_vote_time = user_votes.get(user_id, {}).get(song["id"])
+        song["already_voted"] = last_vote_time and (time.time() - last_vote_time < 600)
 
     tracks.sort(key=lambda s: s["votes"], reverse=True)
-
     return render_template("voting.html", songs=tracks)
 
 @app.route("/vote", methods=["POST"])
 def vote():
     song_id = request.json.get("song_id")
     user_id = request.remote_addr
+    now = int(time.time())
 
     data = load_data()
-    votes = data["votes"]
+    votes = data.get("votes", {})
     user_votes = data.get("user_votes", {})
 
     if user_id not in user_votes:
-        user_votes[user_id] = []
+        user_votes[user_id] = {}
 
-    if song_id in user_votes[user_id]:
+    last_vote_time = user_votes[user_id].get(song_id)
+
+    if last_vote_time and now - last_vote_time < 600:
         return jsonify(success=False, message="WIE OFT DEN NOCH?")
     else:
         votes[song_id] = votes.get(song_id, 0) + 1
-        user_votes[user_id].append(song_id)
+        user_votes[user_id][song_id] = now
         save_data({"votes": votes, "user_votes": user_votes})
         return jsonify(success=True, message="Gute Wahl!")
 
-# ===================== 🔐 Admin Bereich ======================
-
+# Admin Bereich
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
     if request.method == "POST":
@@ -136,12 +138,10 @@ def admin_panel():
 def reset_all():
     if not session.get("is_admin"):
         return redirect("/admin")
-
-    session.clear()  # ✅ Setzt die Sitzung des Admins zurück
+    session.clear()
     save_data({"votes": {}, "user_votes": {}})
     flash("✅ Alle Votes + User-Votes wurden zurückgesetzt.")
     return redirect("/admin-panel")
-
 
 @app.route("/admin-reset-user-votes")
 def reset_user_votes():
